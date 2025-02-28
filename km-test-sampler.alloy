@@ -1,0 +1,30 @@
+declare "client_sampler"{
+    otelcol.receiver.otlp "default" {
+      grpc {}
+      output {
+        metrics = [argument.traces_output.value]
+        logs    = [argument.traces_output.value]
+        traces  = [otelcol.processor.tail_sampling.default.input]
+      }
+    }
+
+    argument "traces_output" {
+        optional = false
+        comment  = "Where to send collected metrics."
+    }
+
+    otelcol.processor.tail_sampling "default" {
+        policy {
+            name = "test-policy"
+            type = "probabilistic"
+
+            probabilistic {
+            sampling_percentage = 100
+            }
+        }
+
+        output {
+            traces = [argument.traces_output.value]
+        }
+    }
+}
